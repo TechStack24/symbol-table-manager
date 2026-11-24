@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # SymTab - Symbol Table Management System
 
 A **Compiler Design** mini project: a web application (Python + Flask) that shows how a compiler
@@ -241,3 +242,7 @@ For `03_semantic_errors.c` the analyzer reports, among others:
 - Add unions, function pointers and `#if` evaluation.
 - Generate three-address code using the offsets stored in the table.
 - Replace the textual initialization check with data-flow analysis.
+=======
+# symbol-table-manager
+A Simple Symbol Table Manager for Compiler Design
+>>>>>>> e7a070b27539ca60a7288dd07ccf3ff56fd447aa
