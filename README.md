@@ -70,27 +70,11 @@ python standalone/symbol_table_manager.py   # same thing as a single file
 
 In option 1 type your program and finish with a line containing only `END`.
 
-## Setup and run (web version)
 
-Requires Python 3.9 or newer.
+## Live Demo  (web version)
 
-```bash
-cd symbol-table-manager
-python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-python app.py
-```
+[🚀 Visit Live Website](symbol-table-manager.vercel.app)
 
-Open symbol-table-manager.vercel.app. Optional environment variables: `PORT` (default 5000; on macOS port 5000
-can be taken by AirPlay, so try `PORT=5001 python app.py`), `HOST`, and `FLASK_DEBUG=1` for auto-reload.
-
-Run the tests:
-
-```bash
-python -m unittest discover -v        # 133 tests
-python tools/build_standalone.py        # only if you edit compiler/*.py (refreshes the single file)
-```
 
 ## How to use the app
 
