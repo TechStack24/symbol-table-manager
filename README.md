@@ -82,7 +82,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Open <http://127.0.0.1:5000>. Optional environment variables: `PORT` (default 5000; on macOS port 5000
+Open symbol-table-manager.vercel.app. Optional environment variables: `PORT` (default 5000; on macOS port 5000
 can be taken by AirPlay, so try `PORT=5001 python app.py`), `HOST`, and `FLASK_DEBUG=1` for auto-reload.
 
 Run the tests:
