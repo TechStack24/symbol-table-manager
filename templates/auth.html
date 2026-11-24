@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ 'Create account' if mode == 'register' else 'Log in' }} - SymTab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <main class="auth-page">
+    <section class="auth-card">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">S</span>
+        <div><h1>SymTab</h1><p>Symbol Table Management System</p></div>
+      </div>
+
+      <h2>{{ 'Create your account' if mode == 'register' else 'Welcome back' }}</h2>
+      <p class="muted">{{ 'Sign up to start analysing C programs.' if mode == 'register' else 'Log in to use the analyzer and playground.' }}</p>
+
+      {% if error %}<div class="auth-error" role="alert">{{ error }}</div>{% endif %}
+
+      <form method="post" action="{{ url_for('auth.register' if mode == 'register' else 'auth.login') }}" autocomplete="on">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <input type="hidden" name="next" value="{{ next }}">
+        <label>Username
+          <input type="text" name="username" value="{{ username }}" required minlength="3" maxlength="30"
+                 pattern="[A-Za-z0-9_]+" autocomplete="username" autofocus>
+          {% if mode == 'register' %}<span class="hintline">3-30 letters, digits or underscore</span>{% endif %}
+        </label>
+        <label>Password
+          <input type="password" name="password" required minlength="{{ 8 if mode == 'register' else 1 }}" maxlength="128"
+                 autocomplete="{{ 'new-password' if mode == 'register' else 'current-password' }}">
+          {% if mode == 'register' %}<span class="hintline">At least 8 characters</span>{% endif %}
+        </label>
+        {% if mode == 'register' %}
+        <label>Confirm password
+          <input type="password" name="confirm" required autocomplete="new-password">
+        </label>
+        {% endif %}
+        <button class="btn primary" type="submit">{{ 'Create account' if mode == 'register' else 'Log in' }}</button>
+      </form>
+
+      <p class="alt">
+        {% if mode == 'register' %}Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a>
+        {% else %}New here? <a href="{{ url_for('auth.register') }}">Create an account</a>{% endif %}
+      </p>
+    </section>
+  </main>
+</body>
+</html>

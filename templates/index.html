@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SymTab - Symbol Table Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">S</span>
+      <div>
+        <h1>SymTab</h1>
+        <p>See how a compiler remembers every name in your program</p>
+      </div>
+      <div class="chain" aria-hidden="true"><span>count</span><i></i><span>total</span><i></i><span>main</span></div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Main sections">
+      <button class="tab-btn active" role="tab" data-tab="analyzer">Analyzer</button>
+      <button class="tab-btn" role="tab" data-tab="playground">Playground</button>
+      <button class="tab-btn" role="tab" data-tab="theory">Theory</button>
+    </nav>
+    {% if current_user %}
+    <form class="userbox" method="post" action="{{ url_for('auth.logout') }}">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <span class="who" title="Signed in">&#128100; {{ current_user['username'] }}</span>
+      <button class="btn small" type="submit">Log out</button>
+    </form>
+    {% endif %}
+  </header>
+
+  <main>
+    <!-- ===================================================== ANALYZER -->
+    <section id="tab-analyzer" class="tab active">
+      <div class="split">
+        <div class="panel">
+          <div class="toolbar">
+            <label for="sample-select" class="sr-only">Sample program</label>
+            <select id="sample-select" aria-label="Sample program"></select>
+            <button id="analyze-btn" class="btn primary" title="Ctrl+Enter">Analyze</button>
+            <button id="clear-btn" class="btn">Clear</button>
+          </div>
+          <div class="editor-title"><b>program.c</b><span>C</span></div>
+          <div class="editor">
+            <div id="gutter" class="gutter" aria-hidden="true"></div>
+            <textarea id="source" spellcheck="false" wrap="off" aria-label="Source code"
+                      placeholder="Write a C program here..."></textarea>
+          </div>
+          <div class="statusbar"><span id="cursor-pos">Ln 1, Col 1</span><span>Ctrl + Enter to analyze</span></div>
+          <p class="hint">Supports most everyday C: all integer/float types, pointers, arrays (1-D and 2-D),
+            <code>struct enum typedef</code>, <code>if / while / do / for / switch</code>, <code>?:</code>, casts,
+            <code>sizeof</code>, <code>#define</code> macros and common library functions
+            (<code>printf scanf strlen malloc fopen ...</code>). Not supported: <code>union goto</code>, function pointers, bit-fields.</p>
+        </div>
+
+        <div class="panel results">
+          <div id="summary" class="cards"></div>
+          <div class="subtabs" role="tablist" aria-label="Result views">
+            <button class="sub-btn active" data-sub="symbols">Symbol table</button>
+            <button class="sub-btn" data-sub="diagnostics">Diagnostics <span id="diag-count" class="count"></span></button>
+            <button class="sub-btn" data-sub="buckets">Hash buckets</button>
+            <button class="sub-btn" data-sub="tokens">Tokens</button>
+            <button class="sub-btn" data-sub="log">Operations log</button>
+          </div>
+          <div class="result-tools">
+            <label class="check"><input type="checkbox" id="show-builtins"> Show built-in functions</label>
+            <button id="export-csv" class="btn small" disabled>Export CSV</button>
+          </div>
+          <div id="view-symbols" class="view active"><p class="empty">Press <b>Analyze</b> to build the symbol table.</p></div>
+          <div id="view-diagnostics" class="view"></div>
+          <div id="view-buckets" class="view"></div>
+          <div id="view-tokens" class="view"></div>
+          <div id="view-log" class="view"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================== PLAYGROUND -->
+    <section id="tab-playground" class="tab">
+      <div class="split">
+        <div class="panel">
+          <h2>Command playground</h2>
+          <p class="hint">Drive the symbol table by hand. Each command is replayed on a fresh table.</p>
+          <form id="cmd-form" class="cmd-form" autocomplete="off">
+            <input id="cmd-input" type="text" spellcheck="false" maxlength="200"
+                   placeholder="insert x int" aria-label="Command">
+            <button class="btn primary" type="submit">Run</button>
+          </form>
+          <div class="btn-row">
+            <button id="demo-btn" class="btn small">Load demo</button>
+            <button id="undo-btn" class="btn small">Undo last</button>
+            <button id="reset-btn" class="btn small">Reset</button>
+          </div>
+          <table class="ref">
+            <tbody>
+              <tr><td><code>insert &lt;name&gt; &lt;type&gt; [kind] [size]</code></td><td>add to the current scope (kind: variable, array, function, parameter)</td></tr>
+              <tr><td><code>lookup &lt;name&gt;</code></td><td>search inner scope &rarr; outer scopes</td></tr>
+              <tr><td><code>delete &lt;name&gt;</code></td><td>remove from the current scope</td></tr>
+              <tr><td><code>enter [name]</code></td><td>open a nested scope</td></tr>
+              <tr><td><code>exit</code></td><td>close the innermost scope</td></tr>
+            </tbody>
+          </table>
+          <h3>History</h3>
+          <ol id="history" class="history"><li class="empty">No commands yet.</li></ol>
+        </div>
+
+        <div class="panel results">
+          <div class="stack-line"><span class="muted">Scope stack</span><div id="scope-stack" class="chips"></div></div>
+          <div id="pg-tables"></div>
+          <h3>Operations log</h3>
+          <div id="pg-log"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================= THEORY -->
+    <section id="tab-theory" class="tab">
+      <div class="theory">
+        <article class="panel">
+          <h2>What is a symbol table?</h2>
+          <p>A symbol table is the compiler's database of every name in the program. For each identifier it
+            stores attributes such as the kind (variable, function, parameter), data type, scope, line of
+            declaration, storage size and offset. Almost every phase reads or updates it.</p>
+          <ul>
+            <li><b>Lexical analysis</b> creates identifier tokens; the first sighting may create an entry.</li>
+            <li><b>Syntax and semantic analysis</b> insert declarations and look names up to check types, scope and arity.</li>
+            <li><b>Intermediate code and code generation</b> read sizes, offsets and types to allocate memory.</li>
+            <li><b>Error reporting</b> uses it for undeclared names, redeclarations and unused variables.</li>
+          </ul>
+        </article>
+        <article class="panel">
+          <h2>Operations</h2>
+          <table class="ref">
+            <tbody>
+              <tr><td><code>insert(symbol)</code></td><td>Add a declaration to the current scope; reject duplicates in the same scope.</td></tr>
+              <tr><td><code>lookup(name)</code></td><td>Search the current scope first, then each enclosing scope up to global.</td></tr>
+              <tr><td><code>delete(name)</code></td><td>Remove a name from the current scope.</td></tr>
+              <tr><td><code>enter_scope()</code></td><td>Push a new, empty table when a block, function or loop begins.</td></tr>
+              <tr><td><code>exit_scope()</code></td><td>Pop the table when the block ends; its names are no longer visible.</td></tr>
+            </tbody>
+          </table>
+        </article>
+        <article class="panel">
+          <h2>Data structure used here</h2>
+          <p>Each scope owns a <b>hash table with separate chaining</b>. The index is
+            <code>djb2(name) mod capacity</code>, where <code>h = h * 33 + char</code> starting from 5381.
+            When the load factor passes 0.75 the table doubles and every entry is rehashed.
+            Insert and lookup take O(1) on average. Scopes form a <b>stack</b>, so lookup is
+            O(depth &times; chain length) and inner names naturally shadow outer ones.</p>
+          <p>Compared with alternatives: a linear list is simple but O(n) per lookup, a sorted array or
+            binary search tree gives O(log n), and a hash table is the usual production choice.</p>
+        </article>
+        <article class="panel">
+          <h2>Checks performed with the table</h2>
+          <ul>
+            <li>Use of an undeclared variable or function</li>
+            <li>Redeclaration in the same scope; shadowing of an outer name (reported as info)</li>
+            <li>Wrong number or type of function arguments; conflicting prototypes</li>
+            <li>Type mismatches such as <code>float</code> to <code>int</code> narrowing; void values used in expressions</li>
+            <li>Return type mismatches and missing <code>return</code></li>
+            <li>Variables used before initialization, or declared but never used</li>
+            <li>Constant array indexes outside the declared size; division by constant zero</li>
+            <li><code>break</code> / <code>continue</code> outside a loop</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">Compiler Design mini project &middot; Python &amp; Flask &middot; C front end</footer>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
