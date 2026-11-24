@@ -73,7 +73,7 @@ In option 1 type your program and finish with a line containing only `END`.
 
 ## Live Demo  (web version)
 
-[🚀 Visit Live Website](symbol-table-manager.vercel.app)
+(symbol-table-manager.vercel.app)
 
 
 ## How to use the app
