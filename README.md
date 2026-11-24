@@ -70,12 +70,6 @@ python standalone/symbol_table_manager.py   # same thing as a single file
 
 In option 1 type your program and finish with a line containing only `END`.
 
-
-## Live Demo
-
-[🚀 Visit Live Website](symbol-table-manager.vercel.app)
-
-
 ## How to use the app
 
 **Analyzer tab** - choose a sample or write your own program, then press **Analyze** (or Ctrl+Enter).
